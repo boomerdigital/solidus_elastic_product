@@ -1,7 +1,34 @@
-SolidusElasticProduct
-====================
+Solidus Elastic Product
+-----------------------
 
-Introduction goes here.
+This integration for Solidus ecommerce stores provides a performance way to index products to Elastic Search. To achieve that, products are concurrently serialized & uploaded with background jobs in batches. The _serialize_ and _upload_ operations are split and are performed independent of each other. A table wrapped by the `Elastic::Product::State` model is used to store the state of an indexed product.
+
+The `State` table contains the following fields:
+
+```ruby
+{
+                             :id => nil,
+                     :product_id => nil,
+                           :json => nil,
+                       :uploaded => false,
+    :locked_for_serialization_at => nil,
+           :locked_for_upload_at => nil
+}
+```
+
+where the `json` field is a string representation of a serialized product; the `upload` flag indicates if the product has been synced with Elastic, while the two locked columns ensure the concurrent serialization and upload processes do not overlap each other.
+
+
+--
+
+The integration focuses primary on the backend synchronization of products with Elastic Search, and as such, does not have any frontend viewes. In the future, such might be added as example only to the spec dummy app.
+
+It does however have a dependency on the official [Elasticsearch Model](https://github.com/elastic/elasticsearch-rails/tree/master/elasticsearch-model) library and exposes its full interface through the `Index` and `State` classes.
+
+ - Use the `Solidus::ElasticProduct::Index` class to perform class operations (define index name, do mappings, perform search or manipulate the index)
+
+ - Use the `Solidus::ElasticProduct::State` class to perform instance level operations with individual indexed products (update, destroy, etc..)
+
 
 Installation
 ------------
@@ -18,6 +45,21 @@ Bundle your dependencies and run the installation generator:
 bundle
 bundle exec rails g solidus_elastic_product:install
 ```
+
+Customize
+---------
+
+All of [Elastic Search Model](https://github.com/elastic/elasticsearch-rails/tree/master/elasticsearch-model's) class methods are available through the `Index` class. So, you can directly customize them. Example from an initializer:
+
+```ruby
+# initializers/solidus_elastic.rb
+Solidus::ElasticProduct::Index.index_name
+Solidus::ElasticProduct::Index.document_type
+Solidus::ElasticProduct::Index.mapping
+```
+
+To customize the export, define `Solidus::Elastic::Config.serializer_class` to respond to `#generate_json` method and define an ActiveRecord refinement method `#each_for_serialization` to preload associations. See the default [Product::Serializer](https://github.com/boomerdigital/solidus_elastic_search/blob/master/app/models/solidus/elastic/product/serializer.rb) as an example.
+
 
 Testing
 -------
@@ -36,4 +78,4 @@ Simply add this require statement to your spec_helper:
 require 'solidus_elastic_product/factories'
 ```
 
-Copyright (c) 2016 [name of extension creator], released under the New BSD License
+Copyright (c) 2016 Martin Tomov; Eric Anderson, released under the New BSD License

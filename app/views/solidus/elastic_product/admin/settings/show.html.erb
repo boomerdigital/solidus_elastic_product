@@ -1,0 +1,21 @@
+<h1>Elastic Product Settings</h1>
+<table class="table table-bordered">
+  <tr>
+    <th>Elastic Product Incremental Update Enabled:</th>
+    <td><%= Solidus::ElasticProduct::Config.incremental_update_enabled %></td>
+  </tr>
+  <tr>
+    <th>Test Connection</th>
+    <td>
+      <%= link_to ping_my_service_admin_elastic_product_settings_path, {remote: true}, class: 'btn btn-small' do %>
+        <button>Ping</button>
+      <% end %>
+    </td>
+  </tr>
+  <tr>
+    <th>Update Elastic Product</th>
+    <td><%= button_to 'Start', admin_elastic_updates_path %></td>
+  </tr>
+</table>
+
+<p><%= link_to_with_icon 'edit', Spree.t("edit"), edit_admin_elastic_product_settings_path %></p>

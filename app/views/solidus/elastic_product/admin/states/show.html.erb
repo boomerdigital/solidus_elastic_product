@@ -1,0 +1,43 @@
+<% content_for :page_actions do %>
+  <%= button_to(spree.reset_admin_product_elastic_state_path(@product, @elastic_state), method: :put, class: 'btn btn-primary btn-success') do %>
+    <span class="icon icon-refresh"></span>
+    Reset
+  <% end %>
+<% end %>
+
+<%= render partial: 'spree/admin/shared/product_tabs', locals: { current: :elastic_state } %>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1 class="panel-title">Elastic State</h1>
+  </div>
+  <div class="panel-body">
+    <p>
+      <label>Uploaded?:</label>
+      <%= @elastic_state.uploaded %>
+    </p>
+    <p>
+      <label>Locked for serialization at:</label>
+      <%= @elastic_state.locked_for_serialization_at %>
+    </p>
+    <p>
+      <label>Locked for upload at:</label>
+      <%= @elastic_state.locked_for_upload_at %>
+    </p>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1 class="panel-title"> JSON</h1>
+  </div>
+  <div class="panel-body">
+    <p>
+      <% if @json.nil? %>
+        Not yet serialized
+      <% else %>
+        <pre><%= @json %></pre>
+      <% end %>
+    </p>
+  </div>
+</div>

@@ -33,6 +33,8 @@ require 'spree/testing_support/url_helpers'
 # Requires factories defined in lib/solidus_elastic_product/factories.rb
 require 'solidus_elastic_product/factories'
 
+ActiveJob::Base.queue_adapter = :test
+
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
 
@@ -73,7 +75,7 @@ RSpec.configure do |config|
 
   # Before each spec check if it is a Javascript test and switch between using database transactions or not where necessary.
   config.before :each do
-    DatabaseCleaner.strategy = RSpec.current_example.metadata[:js] ? :truncation : :transaction
+    DatabaseCleaner.strategy = RSpec.current_example.metadata[:no_transaction] ? :truncation : :transaction
     DatabaseCleaner.start
   end
 
@@ -84,4 +86,8 @@ RSpec.configure do |config|
 
   config.fail_fast = ENV['FAIL_FAST'] || false
   config.order = 'random'
+
+  config.before do
+    ActiveJob::Base.queue_adapter.enqueued_jobs.clear
+  end
 end

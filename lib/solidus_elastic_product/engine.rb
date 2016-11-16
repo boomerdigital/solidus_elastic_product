@@ -4,6 +4,12 @@ module SolidusElasticProduct
     isolate_namespace Spree
     engine_name 'solidus_elastic_product'
 
+    # config.autoload_paths+= %W(#{config.root}/lib)
+
+    initializer "solidus.elastic.preferences", :before => :load_config_initializers do |app|
+      Solidus::ElasticProduct::Config = Solidus::ElasticProduct::Configuration.new
+    end
+
     # use rspec for tests
     config.generators do |g|
       g.test_framework :rspec

@@ -1,0 +1,145 @@
+---
+analysis:
+  analyzer:
+    searchkick_keyword:
+      type: custom
+      tokenizer: keyword
+      filter:
+      - lowercase
+      - searchkick_stemmer
+    default:
+      type: custom
+      char_filter:
+      - ampersand
+      tokenizer: standard
+      filter:
+      - standard
+      - lowercase
+      - asciifolding
+      - searchkick_index_shingle
+      - searchkick_stemmer
+    searchkick_search:
+      type: custom
+      char_filter:
+      - ampersand
+      tokenizer: standard
+      filter:
+      - standard
+      - lowercase
+      - asciifolding
+      - searchkick_search_shingle
+      - searchkick_stemmer
+    searchkick_search2:
+      type: custom
+      char_filter:
+      - ampersand
+      tokenizer: standard
+      filter:
+      - standard
+      - lowercase
+      - asciifolding
+      - searchkick_stemmer
+    searchkick_autocomplete_index:
+      type: custom
+      tokenizer: searchkick_autocomplete_ngram
+      filter:
+      - lowercase
+      - asciifolding
+    searchkick_autocomplete_search:
+      type: custom
+      tokenizer: keyword
+      filter:
+      - lowercase
+      - asciifolding
+    searchkick_word_search:
+      type: custom
+      tokenizer: standard
+      filter:
+      - lowercase
+      - asciifolding
+    searchkick_suggest_index:
+      type: custom
+      tokenizer: standard
+      filter:
+      - lowercase
+      - asciifolding
+      - searchkick_suggest_shingle
+    searchkick_text_start_index:
+      type: custom
+      tokenizer: keyword
+      filter:
+      - lowercase
+      - asciifolding
+      - searchkick_edge_ngram
+    searchkick_text_middle_index:
+      type: custom
+      tokenizer: keyword
+      filter:
+      - lowercase
+      - asciifolding
+      - searchkick_ngram
+    searchkick_text_end_index:
+      type: custom
+      tokenizer: keyword
+      filter:
+      - lowercase
+      - asciifolding
+      - reverse
+      - searchkick_edge_ngram
+      - reverse
+    searchkick_word_start_index:
+      type: custom
+      tokenizer: standard
+      filter:
+      - lowercase
+      - asciifolding
+      - searchkick_edge_ngram
+    searchkick_word_middle_index:
+      type: custom
+      tokenizer: standard
+      filter:
+      - lowercase
+      - asciifolding
+      - searchkick_ngram
+    searchkick_word_end_index:
+      type: custom
+      tokenizer: standard
+      filter:
+      - lowercase
+      - asciifolding
+      - reverse
+      - searchkick_edge_ngram
+      - reverse
+  filter:
+    searchkick_index_shingle:
+      type: shingle
+      token_separator: ''
+    searchkick_search_shingle:
+      type: shingle
+      token_separator: ''
+      output_unigrams: false
+      output_unigrams_if_no_shingles: true
+    searchkick_suggest_shingle:
+      type: shingle
+      max_shingle_size: 5
+    searchkick_edge_ngram:
+      type: edgeNGram
+      min_gram: 1
+      max_gram: 50
+    searchkick_ngram:
+      type: nGram
+      min_gram: 1
+      max_gram: 50
+    searchkick_stemmer:
+      type: snowball
+      language: English
+  char_filter:
+    ampersand:
+      type: mapping
+      mappings:
+      - "&=> and "
+  tokenizer:
+    searchkick_autocomplete_ngram:
+      type: edgeNGram
+      min_gram: 1
+      max_gram: 50

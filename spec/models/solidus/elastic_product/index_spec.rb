@@ -14,15 +14,14 @@ module Solidus::ElasticProduct
     end
 
     describe "Importing interface" do
+      before do
+        allow(State).to receive(:serialized).and_return State
+      end
+
       describe "#__find_in_batches" do
         it "raise an exception when passing an invalid scope" do
           expect { described_class.__find_in_batches(scope: :not_found_method) }.
             to raise_error NoMethodError
-        end
-
-        it "implements the __find_in_batches method" do
-          expect(State).to receive(:find_in_batches).and_return([])
-          described_class.__find_in_batches
         end
 
         it "limit the relation to a specific scope" do
@@ -39,19 +38,31 @@ module Solidus::ElasticProduct
         end
 
         it "preprocess the batch if option provided" do
-          class << State
+          class << Index
             # Updates/transforms the batch while fetching it from the database
             # (eg. with information from an external system)
             #
             def update_batch(batch)
-              batch.collect { |b| b.to_s + '!' }
+              batch.collect { |s| s.json + '!' }
             end
           end
 
-          expect(State).to receive(:find_in_batches).and_return( [:a, :b] )
+          expect(State).to receive(:find_in_batches).and_yield(
+            [State.new(json: 'a'), State.new(json: 'b')]
+          )
 
           described_class.__find_in_batches(preprocess: :update_batch) do |batch|
             expect(batch).to eq ["a!", "b!"]
+          end
+        end
+
+        it "skips over states without json set" do
+          with_json = State.new json: '{}'
+          without_json = State.new
+          expect(State).to receive(:find_in_batches).and_yield [with_json, without_json]
+
+          described_class.__find_in_batches do |batch|
+            expect(batch).to eq [with_json]
           end
         end
       end
@@ -62,7 +73,7 @@ module Solidus::ElasticProduct
         specify { expect(subject).to respond_to(:call) }
 
         it "provides an index transformation" do
-          model = instance_double State, id: 1, as_indexed_json: {}
+          model = instance_double State, id: 1, as_indexed_json: '{}'
           expect(subject.call(model)).to eq( { index: { _id: 1, data: {} } } )
         end
       end

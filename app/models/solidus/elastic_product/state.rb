@@ -8,6 +8,7 @@ module Solidus::ElasticProduct
     # See {Index} for an interface to all of Elastic's class methods
     # @see elasticsearch-model/lib/elasticsearch/model/indexing.rb#L302
     include Elasticsearch::Model::Indexing::InstanceMethods
+    delegate :client, :index_name, :document_type, to: Solidus::ElasticProduct::Index
 
     self.table_name = 'solidus_elastic_product_states'
 

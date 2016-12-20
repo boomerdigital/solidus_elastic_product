@@ -61,6 +61,21 @@ Solidus::ElasticProduct::Index.mapping
 To customize the export, define `Solidus::Elastic::Config.serializer_class` to respond to `#generate_json` method and define an ActiveRecord refinement method `#each_for_serialization` to preload associations. See the default [Product::Serializer](https://github.com/boomerdigital/solidus_elastic_search/blob/master/app/models/solidus/elastic/product/serializer.rb) as an example.
 
 
+Sandbox app
+-------
+    cd spec/dummy
+    bin/rake db:drop
+    bin/rake db:reset
+    bin/rake spree_sample:load
+
+
+Install ElasticSearch
+-------
+  - Install Java - `sudo apt-get install openjdk-8-jre`
+  - [Follow elastic guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/deb.html) to install
+  - Install [Elastic Head](https://github.com/mobz/elasticsearch-head) as a standalone app
+
+
 Testing
 -------
 

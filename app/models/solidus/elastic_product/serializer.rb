@@ -46,8 +46,8 @@ module Solidus::ElasticProduct
           preload = -> (object, method, value) { object.singleton_class.send(:define_method, method) { value } }
 
           scope = includes :elastic_state, :taxons, product_properties: :property,
-            variants: [{ option_values: :option_type }, :default_price, :active_stock_items],
-            master: [:default_price, :images, :active_stock_items]
+            variants: [{ option_values: :option_type }, :default_price],
+            master: [:default_price, :images]
 
           records = scope.to_a # Load outside of transaction to prevent excessive locking
           State.transaction do
@@ -123,12 +123,11 @@ module Solidus::ElasticProduct
 
       refine Spree::Variant do
         def as_indexed_hash
-          price_formatted = "%.2f" % price
+          money = default_price.display_price
           {
-            id: id, sku: sku, price: price_formatted,
-            display_price: "£#{price_formatted}", in_stock: in_stock?,
-            total_on_hand: total_on_hand,
-            backorderable: is_backorderable?
+            id: id, sku: sku, price: money.format(symbol: false),
+            display_price: money.to_s,
+            total_on_hand: total_on_hand
           }.tap do |ret|
             if is_master?
               ret[:option_values] = []

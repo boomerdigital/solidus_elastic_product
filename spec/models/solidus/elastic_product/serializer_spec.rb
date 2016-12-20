@@ -56,10 +56,8 @@ module Solidus::ElasticProduct
     "id": #{master.id},
     "sku": "4949593040589",
     "price": "2.99",
-    "display_price": "£2.99",
-    "in_stock": false,
+    "display_price": "$2.99",
     "total_on_hand": 0,
-    "backorderable": true,
     "option_values": [
 
     ],
@@ -75,10 +73,8 @@ module Solidus::ElasticProduct
       "id": #{variant_1.id},
       "sku": "U4949593040589",
       "price": "1.00",
-      "display_price": "£1.00",
-      "in_stock": true,
+      "display_price": "$1.00",
       "total_on_hand": 5,
-      "backorderable": false,
       "option_values": [
         {
           "name": "used",
@@ -93,10 +89,8 @@ module Solidus::ElasticProduct
       "id": #{variant_2.id},
       "sku": "V4949593040589",
       "price": "2.99",
-      "display_price": "£2.99",
-      "in_stock": true,
+      "display_price": "$2.99",
       "total_on_hand": 8,
-      "backorderable": true,
       "option_values": [
         {
           "name": "new",
@@ -146,7 +140,6 @@ JSON
         product and expected
         variant_1.stock_items.first.set_count_on_hand 5
         variant_2.stock_items.first.set_count_on_hand 8
-        variant_1.stock_items.first.update_column(:backorderable, false)
       end
 
       it 'can generate via a simple call' do

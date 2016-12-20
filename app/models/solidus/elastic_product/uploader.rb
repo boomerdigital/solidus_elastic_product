@@ -20,7 +20,7 @@ module Solidus::ElasticProduct
 
       if succeeded?
         # Elastic says everything good. Mark it as uploaded so it won't be retried.
-        @scope = @scope.where.not product_id: skipped unless skipped.empty?
+        @scope = @scope.where.not id: skipped unless skipped.empty?
         @scope.mark_uploaded!
       else
         # NOTE: We do not clear the lock on failure. This allows some time to
@@ -34,7 +34,6 @@ module Solidus::ElasticProduct
       response
     end
 
-
   private
 
     def generate_body
@@ -46,7 +45,7 @@ module Solidus::ElasticProduct
 
         index_scope.find_each do |state|
           # Just in case the json has been cleared since it was queued
-          @skipped << state.product_id and next unless state.json?
+          @skipped << state.id and next unless state.json?
 
           body.push({ index: { _id: state.id, data: state.json } } )
         end
@@ -67,7 +66,7 @@ module Solidus::ElasticProduct
     class Error < StandardError
       # Automatically extract the relevant info and puts it into the error message.
       def initialize response
-        super "Elastic failed for items: #{response['items'].to_s}}"
+        super "Elastic failed for items: #{response['items']}}"
       end
     end
 

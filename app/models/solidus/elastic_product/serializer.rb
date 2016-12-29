@@ -125,7 +125,7 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           money = default_price.display_price
           {
-            id: id, sku: sku, price: money.format(symbol: false),
+            id: id, sku: sku, price: money.money.format(symbol: false),
             display_price: money.to_s,
             total_on_hand: total_on_hand
           }.tap do |ret|

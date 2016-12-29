@@ -25,9 +25,31 @@ module Solidus::ElasticProduct
     index_name 'products_' + Rails.env
     document_type 'spree/product'
 
-    settings File.open("config/elasticsearch/spree_products.yml")
+    settings File.open(SolidusElasticProduct::Engine.root + "config/elasticsearch/spree_products.yml")
 
-    mappings do
+    options = {
+      dynamic_templates: [
+        {
+          string_template: {
+            match: "*",
+            match_mapping_type: "string",
+            mapping: {
+              fields: {
+                analyzed: {
+                  index: "analyzed",
+                  type: "text"
+                }
+              },
+              ignore_above: 256,
+              include_in_all: true,
+              type: "keyword"
+            }
+          }
+        }
+      ]
+    }
+
+    mappings(options) do
       indexes :name,          type: 'string', analyzer: 'snowball'
       indexes :description,   type: 'string'
       indexes :created_at,    type: 'date'
@@ -60,6 +82,8 @@ module Solidus::ElasticProduct
 
       def __transform
         lambda { |model|
+          # JSON.parse is required due to https://github.com/elastic/elasticsearch-rails/issues/606
+          # remove once issue is resolved, as it slows down the indexing
           { index: { _id: model.id, data: JSON.parse(model.as_indexed_json) } }
         }
       end

@@ -43,7 +43,20 @@ Bundle your dependencies and run the installation generator:
 
 ```shell
 bundle
-bundle exec rails g solidus_elastic_product:install
+bundle exec rake railties:install:migrations
+bundle exec rake db:migrate
+```
+
+Serialize all products for the first time
+
+```ruby
+Solidus::ElasticProduct::Schedule.serialize_all
+
+# monitor the serialized products or just tail the logs
+Solidus::ElasticProduct::State.needing_upload.count
+
+# once serialized (or can stop midway if testing), upload them all to elastic
+Solidus::ElasticProduct::ReindexJob.perform_now
 ```
 
 Customize

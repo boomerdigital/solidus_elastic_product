@@ -1,21 +1,34 @@
-<h1>Elastic Product Settings</h1>
-<table class="table table-bordered">
-  <tr>
-    <th>Elastic Product Incremental Update Enabled:</th>
-    <td><%= Solidus::ElasticProduct::Config.incremental_update_enabled %></td>
-  </tr>
-  <tr>
-    <th>Test Connection</th>
-    <td>
-      <%= link_to ping_my_service_admin_elastic_product_settings_path, {remote: true}, class: 'btn btn-small' do %>
-        <button>Ping</button>
-      <% end %>
-    </td>
-  </tr>
-  <tr>
-    <th>Update Elastic Product</th>
-    <td><%= button_to 'Start', admin_elastic_updates_path %></td>
-  </tr>
-</table>
+<% admin_breadcrumb(Spree.t(:settings) ) %>
+<% admin_breadcrumb(Spree.t('admin.tab.elastic_product_settings')) %>
 
-<p><%= link_to_with_icon 'edit', Spree.t("edit"), edit_admin_elastic_product_settings_path %></p>
+<% content_for :page_actions do %>
+  <ul class="actions inline-menu">
+    <li>
+      <%= button_link_to 'Ping service', spree.ping_service_admin_elastic_product_settings_path, {remote: true} %>
+    </li>
+    <li>
+      <%= button_to 'Start full reindex', spree.admin_elastic_product_reindex_path %></td>
+    </li>
+  </ul>
+<% end %>
+
+<% content_for :tabs do %>
+  <nav>
+    <ul class="tabs">
+      <%= settings_tab_item "Elastic Search Settings", spree.admin_elastic_product_settings_path %>
+    </ul>
+  </nav>
+<% end %>
+
+
+<%= form_for :settings, url: spree.admin_elastic_product_settings_path, method: :put do |f| %>
+  <div class="field checkbox">
+    <label>
+      <%= f.check_box :incremental_update_enabled, {:checked => Solidus::ElasticProduct::Config.incremental_update_enabled}, '1', '0' %>
+      <%= Spree.t('admin.incremental_update_enabled') %>
+    </label>
+  </div>
+
+  <p class="form-buttons"><%= button Spree.t(:update) %></p>
+<% end %>
+

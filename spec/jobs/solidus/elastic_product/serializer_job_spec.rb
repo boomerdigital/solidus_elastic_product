@@ -2,6 +2,9 @@ require 'spec_helper'
 
 module Solidus::ElasticProduct
   describe SerializerJob do
+    before do
+      Config.incremental_update_enabled = true
+    end
 
     it 'will do nothing if incremental updating is disabled' do
       Config.incremental_update_enabled = false

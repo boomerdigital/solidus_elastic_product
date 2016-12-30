@@ -7,7 +7,11 @@ module SolidusElasticProduct
     # config.autoload_paths+= %W(#{config.root}/lib)
 
     initializer "solidus.elastic.preferences", :before => :load_config_initializers do |app|
-      Solidus::ElasticProduct::Config = Solidus::ElasticProduct::Configuration.new
+      Spree::BackendConfiguration::CONFIGURATION_TABS << :settings
+
+      config.to_prepare do
+        Solidus::ElasticProduct::Config = Solidus::ElasticProduct::Configuration.new
+      end
     end
 
     # use rspec for tests

@@ -7,11 +7,11 @@
 
 <%= render partial: 'spree/admin/shared/product_tabs', locals: { current: :elastic_state } %>
 
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h1 class="panel-title">Elastic State</h1>
+<div class="card">
+  <div class="card-header">
+    State
   </div>
-  <div class="panel-body">
+  <div class="card-block">
     <p>
       <label>Uploaded?:</label>
       <%= @elastic_state.uploaded %>
@@ -27,11 +27,11 @@
   </div>
 </div>
 
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h1 class="panel-title"> JSON</h1>
+<div class="card">
+  <div class="card-header">
+    Serialized product
   </div>
-  <div class="panel-body">
+  <div class="card-block">
     <p>
       <% if @json.nil? %>
         Not yet serialized

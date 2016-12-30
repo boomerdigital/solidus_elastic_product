@@ -5,7 +5,7 @@ module Solidus::ElasticProduct
     def perform product_ids
       return unless Config.incremental_update_enabled
 
-      Rails.logger.info "Uploading to Elastic.."
+      Rails.logger.info "ElasticProduct: Uploading to Elastic.."
 
       # If Elastic is operating correctly we should have confirmation very quickly
       # (few seconds). But sometimes Elastic get's running behind so give them up

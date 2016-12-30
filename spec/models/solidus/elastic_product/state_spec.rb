@@ -38,19 +38,19 @@ module Solidus::ElasticProduct
       end
     end
 
-    describe '#only_deleted' do
-      it 'can return only deleted records' do
+    describe '#not_indexable' do
+      it 'returns only deleted records' do
         deleted = create(:product).tap {|p| p.destroy }
         not_deleted = create :product
-        expect( described_class.only_deleted ).to eq [deleted.elastic_state]
+        expect( described_class.not_indexable ).to eq [deleted.elastic_state]
       end
     end
 
-    describe '#not_deleted' do
-      it 'can return only records not deleted' do
+    describe '#indexable' do
+      it 'returns only records not deleted' do
         not_deleted = create :product
         deleted = create(:product).tap {|p| p.destroy }
-        expect( described_class.not_deleted ).to eq [not_deleted.elastic_state]
+        expect( described_class.indexable ).to eq [not_deleted.elastic_state]
       end
     end
 

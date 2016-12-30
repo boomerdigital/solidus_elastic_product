@@ -39,8 +39,8 @@ module Solidus::ElasticProduct
     def generate_body
       # It should only take seconds to generate the JSON
       Timeout::timeout 1.minute do
-        index_scope = scope.not_deleted
-        delete_scope = scope.only_deleted
+        index_scope = scope.indexable
+        delete_scope = scope.not_indexable
         body = []
 
         index_scope.find_each do |state|

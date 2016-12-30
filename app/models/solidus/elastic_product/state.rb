@@ -18,19 +18,18 @@ module Solidus::ElasticProduct
     #
     # Using a 1 hour lock as serialization is not terribly concurrent or fast so
     # it's possible a job could be pending in the queue for a while.
-    scope :needing_serialization, -> { not_locked(:serialization, 1.hour).not_deleted.where json: nil }
+    scope :needing_serialization, -> { not_locked(:serialization, 1.hour).indexable.where json: nil }
 
     # All products that need uploading which have been serialized not already in queue to be uploaded
     #
     # Due to the much shorter time and higher level of concurency to upload the
     # locks are not held as long for uploads.
-    scope :needing_upload, -> { not_locked(:upload, 20.minutes).serialized_or_deleted.where uploaded: false }
+    scope :needing_upload, -> { not_locked(:upload, 20.minutes).serialized_or_excluded.where uploaded: false }
 
-    # When doing an incremental update we need to treat deleted and active products
-    # differently. When doing a full update we need to be able to exclude deleted
-    # products. The below two scopes help with that.
-    scope :only_deleted, -> { with_product.where.not Spree::Product.table_name => {deleted_at: nil} }
-    scope :not_deleted,  -> { with_product.where Spree::Product.table_name => {deleted_at: nil} }
+    # Customization points for excluding products from the search index
+    #
+    scope :indexable,     -> { not_deleted }
+    scope :not_indexable, -> { only_deleted }
 
     # Will mark all the states in the given scope as uploaded. This is done
     # in batch unlike reset! and generate_json! because until the entire batch
@@ -71,10 +70,16 @@ module Solidus::ElasticProduct
   private
 
     # Support scopes not meant to be used externally
+    scope :only_deleted, -> { with_product.where.not Spree::Product.table_name => {deleted_at: nil} }
+    scope :not_deleted,  -> { with_product.where Spree::Product.table_name => {deleted_at: nil} }
+
     scope :serialized, -> { where.not json: nil }
 
-    scope :serialized_or_deleted, -> {
-      with_product.where(arel_table[:json].not_eq(nil).or(Spree::Product.arel_table[:deleted_at].not_eq(nil)))
+    scope :serialized_or_excluded, -> {
+      serialized = unscoped.serialized.where_values.reduce(:and)
+      excluded_from_index = unscoped.not_indexable.where_values.reduce(:and)
+
+      with_product.where serialized.or(excluded_from_index)
     }
 
     scope :not_locked, ->(field, expiration) {

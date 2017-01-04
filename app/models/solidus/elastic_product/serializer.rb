@@ -152,10 +152,9 @@ module Solidus::ElasticProduct
             id: id, name: name, parent_id: parent_id, permalink: permalink,
             description: description,
             meta_description: meta_description,
-            meta_title: meta_title
-          }.tap do |ret|
-            ret[:taxons] = ancestors.collect {|t| t.as_indexed_hash ancestor: true} unless ancestor
-          end
+            meta_title: meta_title,
+            ancestors: [self_and_ancestors.collect { |t| t.attributes }]
+          }
         end
       end
 

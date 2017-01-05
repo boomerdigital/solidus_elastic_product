@@ -116,7 +116,7 @@ module Solidus::ElasticProduct
             shipping_category_id: shipping_category_id, master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash},
             product_properties: product_properties.collect {|p| p.as_indexed_hash},
-            classifications: classifications.collect {|c| {taxon: c.taxon.as_indexed_hash}}
+            taxons: classifications.collect {|c| {taxon: c.taxon.as_indexed_hash}}
           }
         end
       end

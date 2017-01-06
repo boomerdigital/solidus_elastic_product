@@ -60,7 +60,7 @@ module Solidus::ElasticProduct
               end
 
               for taxon in product.taxons
-                preload[taxon, :ancestors, Spree::Taxon.ancestors_for(taxon)]
+                preload[taxon, :self_and_ancestors, Spree::Taxon.self_and_ancestors(taxon)]
               end
 
               blk.call product
@@ -72,19 +72,21 @@ module Solidus::ElasticProduct
       refine Spree::Taxon.singleton_class do
         # The exact same as taxon.ancestors only all the taxons and determined once
         # and cached. After that it is just a lookup.
-        def ancestors_for requested_taxon
+        def self_and_ancestors requested_taxon
           @ancestors_by_taxon ||= begin
             all.inject(Hash.new {|h, k| h[k] = []}) do |hsh, taxon|
               taxon_id = taxon.id
+              hsh[taxon_id] << taxon
               begin
                 parent = by_id[taxon.parent_id]
                 hsh[taxon_id] << parent if parent
               end until (taxon = parent).nil?
+              hsh[taxon_id]
               hsh
             end
           end
 
-          @ancestors_by_taxon[requested_taxon.id].sort_by &:id
+          @ancestors_by_taxon[requested_taxon.id].reverse
         end
 
         # Returns and caches all taxons indexed by parent id
@@ -116,7 +118,7 @@ module Solidus::ElasticProduct
             shipping_category_id: shipping_category_id, master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash},
             product_properties: product_properties.collect {|p| p.as_indexed_hash},
-            classifications: classifications.collect {|c| {taxon: c.taxon.as_indexed_hash}}
+            taxons: classifications.collect {|c| c.as_indexed_hash}
           }
         end
       end
@@ -146,16 +148,27 @@ module Solidus::ElasticProduct
         end
       end
 
+      refine Spree::Classification do
+        def as_indexed_hash
+          taxon.self_and_ancestors.inject(nil) do |as_hash, taxon|
+            if as_hash.nil?
+              as_hash = taxon.as_indexed_hash
+            else
+              as_hash[:child] = taxon.as_indexed_hash
+            end
+            as_hash
+          end
+        end
+      end
+
       refine Spree::Taxon do
-        def as_indexed_hash ancestor: false
+        def as_indexed_hash
           {
             id: id, name: name, parent_id: parent_id, permalink: permalink,
             description: description,
             meta_description: meta_description,
             meta_title: meta_title
-          }.tap do |ret|
-            ret[:taxons] = ancestors.collect {|t| t.as_indexed_hash ancestor: true} unless ancestor
-          end
+          }
         end
       end
 

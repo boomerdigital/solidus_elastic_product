@@ -108,27 +108,23 @@ module Solidus::ElasticProduct
       "property_name": "artist"
     }
   ],
-  "classifications": [
+  "taxons": [
     {
-      "taxon": {
+      "id": #{taxon.parent_id},
+      "name": "Genre",
+      "parent_id": null,
+      "permalink": "genre",
+      "description": null,
+      "meta_description": null,
+      "meta_title": null,
+      "child": {
         "id": #{taxon.id},
         "name": "Rock",
         "parent_id": #{taxon.parent_id},
         "permalink": "genre/rock",
         "description": "Main Taxon Descr",
         "meta_description": "Meta Desc",
-        "meta_title": "Meta Titl",
-        "taxons": [
-          {
-            "id": #{taxon.parent_id},
-            "name": "Genre",
-            "parent_id": null,
-            "permalink": "genre",
-            "description": null,
-            "meta_description": null,
-            "meta_title": null
-          }
-        ]
+        "meta_title": "Meta Titl"
       }
     }
   ]
@@ -171,9 +167,9 @@ JSON
           json = described_class.new(product).generate_indexed_json
           json = JSON.parse(json)
 
-          expect( json["classifications"].size).to eq 2
-          json["classifications"].each do |taxon_node|
-            expect(taxon_node["taxon"]["taxons"]).not_to be_empty
+          expect( json["taxons"].size).to eq 2
+          json["taxons"].each do |taxon_node|
+            expect(taxon_node["child"]).not_to be_empty
           end
         end
       end

@@ -86,7 +86,7 @@ Install ElasticSearch
 -------
   - Install Java - `sudo apt-get install openjdk-8-jre`
   - [Follow elastic guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/deb.html) to install
-  - Install [Elastic Head](https://github.com/mobz/elasticsearch-head) as a standalone app
+  - Install [Kibana](https://www.elastic.co/guide/en/kibana/current/deb.html) for a user interface to elastic
 
 
 Testing

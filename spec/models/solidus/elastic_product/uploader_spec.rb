@@ -9,7 +9,7 @@ module Solidus::ElasticProduct
       it 'will upload products with pre-generated JSON' do
         expected_args = {
           index: "products_test",
-          type:  "spree/product",
+          type:  "product",
           body:  [{:index=>{:_id=>1, :data=>'{"foo": "bar"}'}}]
         }
         expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
@@ -24,7 +24,7 @@ module Solidus::ElasticProduct
       it 'will skip products without JSON' do
         expected_args = {
           index: "products_test",
-          type:  "spree/product",
+          type:  "product",
           body:  []
         }
         expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
@@ -39,7 +39,7 @@ module Solidus::ElasticProduct
       it 'will indicate what products should be removed' do
         expected_args = {
           index: "products_test",
-          type:  "spree/product",
+          type:  "product",
           body:  [{delete: {_id: 1}}]
         }
         expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)

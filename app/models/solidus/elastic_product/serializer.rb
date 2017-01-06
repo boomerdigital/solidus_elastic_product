@@ -115,9 +115,9 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           {
             id: id, name: name, description: description, slug: slug,
-            shipping_category_id: shipping_category_id, master: master.as_indexed_hash,
+            master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash},
-            product_properties: product_properties.collect {|p| p.as_indexed_hash},
+            properties: product_properties.collect {|p| p.as_indexed_hash},
             taxons: classifications.collect {|c| c.as_indexed_hash}
           }
         end
@@ -127,7 +127,8 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           money = default_price.display_price
           {
-            id: id, sku: sku, price: money.money.format(symbol: false),
+            id: id, sku: sku,
+            price: money.money.format(symbol: false),
             display_price: money.to_s,
             total_on_hand: total_on_hand
           }.tap do |ret|
@@ -164,10 +165,9 @@ module Solidus::ElasticProduct
       refine Spree::Taxon do
         def as_indexed_hash
           {
-            id: id, name: name, parent_id: parent_id, permalink: permalink,
+            id: id, name: name,
+            permalink: permalink,
             description: description,
-            meta_description: meta_description,
-            meta_title: meta_title
           }
         end
       end

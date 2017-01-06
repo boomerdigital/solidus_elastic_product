@@ -51,7 +51,6 @@ module Solidus::ElasticProduct
   "name": "my name",
   "description": "my description",
   "slug": "my-name",
-  "shipping_category_id": #{Spree::ShippingCategory.first.id},
   "master": {
     "id": #{master.id},
     "sku": "4949593040589",
@@ -102,7 +101,7 @@ module Solidus::ElasticProduct
       ]
     }
   ],
-  "product_properties": [
+  "properties": [
     {
       "value": "Pixies",
       "property_name": "artist"
@@ -112,19 +111,13 @@ module Solidus::ElasticProduct
     {
       "id": #{taxon.parent_id},
       "name": "Genre",
-      "parent_id": null,
       "permalink": "genre",
       "description": null,
-      "meta_description": null,
-      "meta_title": null,
       "child": {
         "id": #{taxon.id},
         "name": "Rock",
-        "parent_id": #{taxon.parent_id},
         "permalink": "genre/rock",
-        "description": "Main Taxon Descr",
-        "meta_description": "Meta Desc",
-        "meta_title": "Meta Titl"
+        "description": "Main Taxon Descr"
       }
     }
   ]

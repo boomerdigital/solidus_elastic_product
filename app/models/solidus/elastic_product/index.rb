@@ -23,7 +23,7 @@ module Solidus::ElasticProduct
     extend Elasticsearch::Model::Importing::ClassMethods
 
     index_name 'products_' + Rails.env
-    document_type 'spree/product'
+    document_type 'product'
 
     settings File.open(SolidusElasticProduct::Engine.root + "config/elasticsearch/spree_products.yml")
 
@@ -51,11 +51,8 @@ module Solidus::ElasticProduct
 
     mappings(options) do
       indexes :name,          type: 'string', analyzer: 'snowball'
-      indexes :description,   type: 'string'
-      indexes :created_at,    type: 'date'
       indexes :taxons,        type: 'nested' do
         indexes :id,          type: 'long'
-        indexes :meta_description,   type: "keyword"
       end
     end
 

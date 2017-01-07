@@ -120,7 +120,7 @@ module Solidus::ElasticProduct
             properties: product_properties.collect {|p| p.as_indexed_hash},
             taxons: classifications.collect {|c| c.as_indexed_hash}
           }
-        end
+        end unless instance_methods(true).include?(:as_indexed_hash)
       end
 
       refine Spree::Variant do
@@ -141,13 +141,13 @@ module Solidus::ElasticProduct
             end
           end
         end
-      end
+      end unless instance_methods(true).include?(:as_indexed_hash)
 
       refine Spree::ProductProperty do
         def as_indexed_hash
           {value: value, property_name: property_name}
         end
-      end
+      end unless instance_methods(true).include?(:as_indexed_hash)
 
       refine Spree::Classification do
         def as_indexed_hash
@@ -160,7 +160,7 @@ module Solidus::ElasticProduct
             as_hash
           end
         end
-      end
+      end unless instance_methods(true).include?(:as_indexed_hash)
 
       refine Spree::Taxon do
         def as_indexed_hash
@@ -170,19 +170,19 @@ module Solidus::ElasticProduct
             description: description,
           }
         end
-      end
+      end unless instance_methods(true).include?(:as_indexed_hash)
 
       refine Spree::Image do
         def as_indexed_hash
           { position: position, small_url: attachment.url(:small) }
         end
-      end
+      end unless instance_methods(true).include?(:as_indexed_hash)
 
       refine Spree::OptionValue do
         def as_indexed_hash
           { name: name, option_type_name: option_type_name }
         end
-      end
+      end unless instance_methods(true).include?(:as_indexed_hash)
     end
 
     using ElasticRepresentation

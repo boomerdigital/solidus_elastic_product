@@ -45,7 +45,7 @@ module Solidus::ElasticProduct
 
           preload = -> (object, method, value) { object.singleton_class.send(:define_method, method) { value } }
 
-          scope = includes :elastic_state, :taxons, product_properties: :property,
+          scope = includes :elastic_state, :indexable_classifications, indexable_product_properties: :property,
             variants: [{ option_values: :option_type }, :default_price],
             master: [:default_price, :images]
 
@@ -59,7 +59,9 @@ module Solidus::ElasticProduct
                 preload[variant, :total_on_hand, variants_on_hand[variant.id] || 0]
               end
 
-              for taxon in product.taxons
+              for classification in product.indexable_classifications
+                taxon = Spree::Taxon.by_id[classification.taxon_id]
+                preload[classification, :taxon, taxon]
                 preload[taxon, :self_and_ancestors, Spree::Taxon.self_and_ancestors(taxon)]
               end
 
@@ -117,8 +119,8 @@ module Solidus::ElasticProduct
             id: id, name: name, description: description, slug: slug,
             master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash},
-            properties: product_properties.collect {|p| p.as_indexed_hash},
-            taxons: classifications.collect {|c| c.as_indexed_hash}
+            properties: indexable_product_properties.collect {|p| p.as_indexed_hash},
+            taxons: indexable_classifications.collect {|c| c.as_indexed_hash}
           }
         end unless instance_methods(true).include?(:as_indexed_hash)
       end

@@ -4,6 +4,19 @@ Spree::Product.class_eval do
   # paranoia gem will remove it if we put `dependent: :destroy`
   has_one :elastic_state, class_name: 'Solidus::ElasticProduct::State', inverse_of: :product
 
+
+  # Customization point for excluding properties from the search index.
+  # Can be steered for example via boolean flag on Property.
+  # Ex: -> { joins(:property).where(indexable: true) }
+  #
+  has_many :indexable_product_properties, class_name: 'Spree::ProductProperty'
+
+  # Customization point for excluding taxons from the search index.
+  # Can for example be used to index only taxons in chosen Taxonomies
+  # via a boolean flag on the Taxonomy table.
+  #
+  has_many :indexable_classifications, class_name: 'Spree::Classification'
+
   private
 
   # Trigger the state reset so that the manager can notice work needs to be done

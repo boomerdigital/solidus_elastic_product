@@ -40,12 +40,6 @@ analysis:
       - lowercase
       - asciifolding
       - searchkick_stemmer
-    searchkick_autocomplete_index:
-      type: custom
-      tokenizer: searchkick_autocomplete_ngram
-      filter:
-      - lowercase
-      - asciifolding
     searchkick_autocomplete_search:
       type: custom
       tokenizer: keyword

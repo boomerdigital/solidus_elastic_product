@@ -10,6 +10,11 @@ describe Spree::Product do
     specify { expect(subject.elastic_state).to be_persisted }
   end
 
+  describe '#indexed_popularity' do
+    before { allow(product).to receive(:line_items) { [double, double] } }
+    specify { expect(subject.indexed_popularity).to eq(2) }
+  end
+
   describe '#indexable_product_properties' do
     specify { expect(subject.indexable_product_properties).to eq([]) }
   end

@@ -53,6 +53,11 @@ module Solidus::ElasticProduct
             where("spree_variants.product_id in (#{sub_query})").
             group_by &:product_id
 
+          popularity = Spree::LineItem.
+            joins(:variant).
+            where("product_id IN (#{sub_query})").
+            group(:product_id).count
+
           preload = -> (object, method, value) { object.singleton_class.send(:define_method, method) { value } }
 
           scope = includes :elastic_state, :indexable_classifications, indexable_product_properties: :property,
@@ -70,6 +75,8 @@ module Solidus::ElasticProduct
               end
 
               preload[product, :display_image, images.key?(product.id) && images[product.id][0] || Spree::Image.new]
+
+              preload[product, :indexed_popularity, popularity[product.id] || 0]
 
               for classification in product.indexable_classifications
                 taxon = Spree::Taxon.by_id[classification.taxon_id]
@@ -129,6 +136,7 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           {
             id: id, name: name, description: description, slug: slug,
+            popularity: indexed_popularity,
             image: display_image.as_indexed_hash,
             master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash},

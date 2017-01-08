@@ -34,6 +34,8 @@ module Solidus::ElasticProduct
           meta_title: "Meta Titl"
       }
       let(:property) { build :product_property, value: 'Pixies', property: build(:property, name: 'artist') }
+      let(:line_item_with_master_variant) { create :line_item, variant: master }
+      let(:line_item_with_regular_variant) { create :line_item, variant: variant_1 }
       let :product do
         create :product, name: 'my name', description: 'my description',
           master: master,
@@ -52,6 +54,7 @@ module Solidus::ElasticProduct
   "name": "my name",
   "description": "my description",
   "slug": "my-name",
+  "popularity": 2,
   "image": {
     "small_url": "#{image.attachment.url(:small)}"
   },
@@ -121,6 +124,7 @@ JSON
         product and expected
         variant_1.stock_items.first.set_count_on_hand 5
         variant_2.stock_items.first.set_count_on_hand 8
+        line_item_with_master_variant and line_item_with_regular_variant
       end
 
       it 'can generate via a simple call' do

@@ -17,6 +17,10 @@ Spree::Product.class_eval do
   #
   has_many :indexable_classifications, class_name: 'Spree::Classification'
 
+  def indexed_popularity
+    line_items.count
+  end
+
   private
 
   # Trigger the state reset so that the manager can notice work needs to be done

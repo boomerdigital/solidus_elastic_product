@@ -23,10 +23,10 @@ Spree::Product.class_eval do
 
   private
 
-  # Trigger the state reset so that the manager can notice work needs to be done
-  # to resync with SearchBroker.
+  # Trigger the state reset so that the manager can notice
+  # work needs to be done to resync the product's index document
   def reset_index_state
-    elastic_state.reset! if elastic_state && deleted_at.nil?
+    elastic_state.reset! if elastic_state
   end
   after_touch :reset_index_state
 

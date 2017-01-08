@@ -43,11 +43,21 @@ module Solidus::ElasticProduct
             where(spree_stock_locations: {active: true}).
             group(:variant_id).sum :count_on_hand
 
+          # With postgres, we can grab just the first image per product, saving on memory.
+          # The order bit takes care to select the master images if any first.
+          distinct = ActiveRecord::Base.connection.adapter_name == 'PostgreSQL' ? 'distinct on (product_id) ' : ''
+          images = Spree::Image.
+            select(distinct + 'spree_variants.product_id, spree_assets.*').
+            joins("join spree_variants on viewable_id = spree_variants.id").
+            order("spree_variants.product_id", "spree_variants.position", "spree_variants.id", :position).
+            where("spree_variants.product_id in (#{sub_query})").
+            group_by &:product_id
+
           preload = -> (object, method, value) { object.singleton_class.send(:define_method, method) { value } }
 
           scope = includes :elastic_state, :indexable_classifications, indexable_product_properties: :property,
             variants: [{ option_values: :option_type }, :default_price],
-            master: [:default_price, :images]
+            master: [:default_price]
 
           records = scope.to_a # Load outside of transaction to prevent excessive locking
           State.transaction do
@@ -58,6 +68,8 @@ module Solidus::ElasticProduct
               for variant in product.variants
                 preload[variant, :total_on_hand, variants_on_hand[variant.id] || 0]
               end
+
+              preload[product, :display_image, images.key?(product.id) && images[product.id][0] || Spree::Image.new]
 
               for classification in product.indexable_classifications
                 taxon = Spree::Taxon.by_id[classification.taxon_id]
@@ -117,6 +129,7 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           {
             id: id, name: name, description: description, slug: slug,
+            image: display_image.as_indexed_hash,
             master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash},
             properties: indexable_product_properties.collect {|p| p.as_indexed_hash},
@@ -136,10 +149,8 @@ module Solidus::ElasticProduct
           }.tap do |ret|
             if is_master?
               ret[:option_values] = []
-              ret[:images] = images.collect {|i| i.as_indexed_hash}
             else
               ret[:option_values] = option_values.collect {|o| o.as_indexed_hash}
-              ret[:images] = []
             end
           end
         end
@@ -176,7 +187,7 @@ module Solidus::ElasticProduct
 
       refine Spree::Image do
         def as_indexed_hash
-          { position: position, small_url: attachment.url(:small) }
+          { small_url: attachment.url(:small) }
         end
       end unless instance_methods(true).include?(:as_indexed_hash)
 

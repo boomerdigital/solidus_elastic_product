@@ -51,6 +51,7 @@ module Solidus::ElasticProduct
 
     mappings(options) do
       indexes :name,          type: 'string', analyzer: 'snowball'
+      indexes :created_at,    type: 'date'
       indexes :taxons,        type: 'nested' do
         indexes :id,          type: 'long'
       end

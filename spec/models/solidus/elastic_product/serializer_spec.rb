@@ -54,6 +54,7 @@ module Solidus::ElasticProduct
   "name": "my name",
   "description": "my description",
   "slug": "my-name",
+  "created_at": "#{product.created_at.utc}",
   "popularity": 2,
   "image": {
     "small_url": "#{image.attachment.url(:small)}"

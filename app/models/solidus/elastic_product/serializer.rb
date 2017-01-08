@@ -136,6 +136,7 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           {
             id: id, name: name, description: description, slug: slug,
+            created_at: created_at.to_s,
             popularity: indexed_popularity,
             image: display_image.as_indexed_hash,
             master: master.as_indexed_hash,

@@ -1,3 +1,5 @@
+require "solidus/elastic_product/state"
+
 Spree::Product.class_eval do
   # `dependent: :destroy` purposely left off. We don't really want to add a soft
   # delete to the state record (it really inherits the product flag) but the

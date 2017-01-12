@@ -95,9 +95,9 @@ module Solidus::ElasticProduct
         # and cached. After that it is just a lookup.
         def self_and_ancestors requested_taxon
           @ancestors_by_taxon ||= begin
-            all.inject(Hash.new {|h, k| h[k] = []}) do |hsh, taxon|
+            all.inject({}) do |hsh, taxon|
               taxon_id = taxon.id
-              hsh[taxon_id] << taxon
+              hsh[taxon_id] = [taxon]
               begin
                 parent = by_id[taxon.parent_id]
                 hsh[taxon_id] << parent if parent
@@ -136,7 +136,7 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           {
             id: id, name: name, description: description, slug: slug,
-            created_at: created_at.to_s,
+            created_at: created_at.to_formatted_s(:iso8601),
             popularity: indexed_popularity,
             image: display_image.as_indexed_hash,
             master: master.as_indexed_hash,
@@ -173,12 +173,13 @@ module Solidus::ElasticProduct
 
       refine Spree::Classification do
         def as_indexed_hash
-          taxon.self_and_ancestors.inject(nil) do |as_hash, taxon|
-            if as_hash.nil?
-              as_hash = taxon.as_indexed_hash
-            else
-              as_hash[:child] = taxon.as_indexed_hash
-            end
+          taxon.self_and_ancestors.inject({}) do |as_hash, taxon|
+            next taxon.as_indexed_hash if as_hash.blank?
+
+            current = as_hash
+            current = current[:child] while current[:child]
+            current[:child] = taxon.as_indexed_hash
+
             as_hash
           end
         end

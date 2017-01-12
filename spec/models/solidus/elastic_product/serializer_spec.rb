@@ -33,15 +33,20 @@ module Solidus::ElasticProduct
           meta_description: "Meta Desc",
           meta_title: "Meta Titl"
       }
+      let(:sub_taxon) {
+        build :taxon, name: 'Roll', taxonomy: taxonomy,
+          parent: taxon
+      }
       let(:property) { build :product_property, value: 'Pixies', property: build(:property, name: 'artist') }
       let(:line_item_with_master_variant) { create :line_item, variant: master }
       let(:line_item_with_regular_variant) { create :line_item, variant: variant_1 }
       let :product do
         create :product, name: 'my name', description: 'my description',
+          created_at: Date.parse('2017-01-12'),
           master: master,
           variants: [variant_1, variant_2],
           product_properties: [property],
-          taxons: [taxon],
+          taxons: [sub_taxon],
           option_types: [option_type]
       end
 
@@ -54,7 +59,7 @@ module Solidus::ElasticProduct
   "name": "my name",
   "description": "my description",
   "slug": "my-name",
-  "created_at": "#{product.created_at.utc}",
+  "created_at": "2017-01-12T00:00:00Z",
   "popularity": 2,
   "image": {
     "small_url": "#{image.attachment.url(:small)}"
@@ -113,7 +118,13 @@ module Solidus::ElasticProduct
         "id": #{taxon.id},
         "name": "Rock",
         "permalink": "genre/rock",
-        "description": "Main Taxon Descr"
+        "description": "Main Taxon Descr",
+        "child": {
+          "id": #{sub_taxon.id},
+          "name": "Roll",
+          "permalink": "genre/rock/roll",
+          "description": null
+        }
       }
     }
   ]

@@ -189,7 +189,7 @@ module Solidus::ElasticProduct
       Spree::Taxon.class_eval do
         def as_indexed_hash
           {
-            id: id, name: name,
+            name: name,
             permalink: permalink,
             description: description,
             permaname: [permalink, '||', name].join

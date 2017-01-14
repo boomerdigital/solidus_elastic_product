@@ -53,7 +53,13 @@ module Solidus::ElasticProduct
       indexes :name,          type: 'string', analyzer: 'snowball'
       indexes :created_at,    type: 'date'
       indexes :taxons,        type: 'nested' do
-        indexes :id,          type: 'long'
+        indexes :permaname,   type: 'keyword', index: 'not_analyzed'
+        indexes :child do
+          indexes :permaname, type: 'keyword', index: 'not_analyzed'
+          indexes :child do
+            indexes :permaname, type: 'keyword', index: 'not_analyzed'
+          end
+        end
       end
     end
 

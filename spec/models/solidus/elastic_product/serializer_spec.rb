@@ -114,16 +114,19 @@ module Solidus::ElasticProduct
       "name": "Genre",
       "permalink": "genre",
       "description": null,
+      "permaname": "genre||Genre",
       "child": {
         "id": #{taxon.id},
         "name": "Rock",
         "permalink": "genre/rock",
         "description": "Main Taxon Descr",
+        "permaname": "genre/rock||Rock",
         "child": {
           "id": #{sub_taxon.id},
           "name": "Roll",
           "permalink": "genre/rock/roll",
-          "description": null
+          "description": null,
+          "permaname": "genre/rock/roll||Roll"
         }
       }
     }

@@ -191,6 +191,7 @@ module Solidus::ElasticProduct
             id: id, name: name,
             permalink: permalink,
             description: description,
+            permaname: [permalink, '||', name].join
           }
         end
       end unless instance_methods(true).include?(:as_indexed_hash)

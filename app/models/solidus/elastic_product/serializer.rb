@@ -126,13 +126,14 @@ module Solidus::ElasticProduct
       end
     end
 
-    private
-
-    # A refinement that augments the core spree models so they know how to
-    # generate their portion of the search broker representation. That
+    # A module that augments the core spree models so they know how to
+    # generate their portion of the elastic representation. That
     # representation is then given to the JSON encoder to generate the final JSON.
+
+    # To override the default representation, copy the method over to your
+    # decorated class and modify as needed.
     module ElasticRepresentation
-      refine Spree::Product do
+      Spree::Product.class_eval do
         def as_indexed_hash
           {
             id: id, name: name, description: description, slug: slug,
@@ -140,14 +141,14 @@ module Solidus::ElasticProduct
             popularity: indexed_popularity,
             image: display_image.as_indexed_hash,
             master: master.as_indexed_hash,
-            variants: variants.collect {|v| v.as_indexed_hash},
+            variants: variants.collect {|v| v.as_indexed_hash}.compact,
             properties: indexable_product_properties.collect {|p| p.as_indexed_hash},
             taxons: indexable_classifications.collect {|c| c.as_indexed_hash}
           }
         end unless instance_methods(true).include?(:as_indexed_hash)
       end
 
-      refine Spree::Variant do
+      Spree::Variant.class_eval do
         def as_indexed_hash
           money = default_price.display_price
           {
@@ -162,16 +163,16 @@ module Solidus::ElasticProduct
               ret[:option_values] = option_values.collect {|o| o.as_indexed_hash}
             end
           end
-        end
-      end unless instance_methods(true).include?(:as_indexed_hash)
+        end unless instance_methods(true).include?(:as_indexed_hash)
+      end
 
-      refine Spree::ProductProperty do
+      Spree::ProductProperty.class_eval do
         def as_indexed_hash
           {value: value, property_name: property_name}
-        end
-      end unless instance_methods(true).include?(:as_indexed_hash)
+        end unless instance_methods(true).include?(:as_indexed_hash)
+      end
 
-      refine Spree::Classification do
+      Spree::Classification.class_eval do
         def as_indexed_hash
           taxon.self_and_ancestors.inject({}) do |as_hash, taxon|
             next taxon.as_indexed_hash if as_hash.blank?
@@ -182,10 +183,10 @@ module Solidus::ElasticProduct
 
             as_hash
           end
-        end
-      end unless instance_methods(true).include?(:as_indexed_hash)
+        end unless instance_methods(true).include?(:as_indexed_hash)
+      end
 
-      refine Spree::Taxon do
+      Spree::Taxon.class_eval do
         def as_indexed_hash
           {
             id: id, name: name,
@@ -193,23 +194,23 @@ module Solidus::ElasticProduct
             description: description,
             permaname: [permalink, '||', name].join
           }
-        end
-      end unless instance_methods(true).include?(:as_indexed_hash)
+        end unless instance_methods(true).include?(:as_indexed_hash)
+      end
 
-      refine Spree::Image do
+      Spree::Image.class_eval do
         def as_indexed_hash
           { small_url: attachment.url(:small) }
-        end
-      end unless instance_methods(true).include?(:as_indexed_hash)
+        end unless instance_methods(true).include?(:as_indexed_hash)
+      end
 
-      refine Spree::OptionValue do
+      Spree::OptionValue.class_eval do
         def as_indexed_hash
           { name: name, option_type_name: option_type_name }
-        end
-      end unless instance_methods(true).include?(:as_indexed_hash)
+        end unless instance_methods(true).include?(:as_indexed_hash)
+      end
     end
 
-    using ElasticRepresentation
+    include ElasticRepresentation
 
     # Returns the JSON representation of a Product
     #
@@ -222,7 +223,6 @@ module Solidus::ElasticProduct
     def generate_indexed_json
       product.as_indexed_hash.to_json
     end
-    public :generate_indexed_json
 
   end
 end

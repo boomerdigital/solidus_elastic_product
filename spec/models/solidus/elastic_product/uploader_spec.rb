@@ -10,7 +10,7 @@ module Solidus::ElasticProduct
         expected_args = {
           index: "products_test",
           type:  "product",
-          body:  [{:index=>{:_id=>1, :data=>'{"foo": "bar"}'}}]
+          body:  [{:index=>{:_id=>1, :data => '{"foo": "bar"}'}}]
         }
         expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
 

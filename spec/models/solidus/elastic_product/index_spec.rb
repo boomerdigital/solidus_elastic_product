@@ -74,7 +74,7 @@ module Solidus::ElasticProduct
 
         it "provides an index transformation" do
           model = instance_double State, id: 1, as_indexed_json: '{}'
-          expect(subject.call(model)).to eq( { index: { _id: 1, data: {} } } )
+          expect(subject.call(model)).to eq( { index: { _id: 1, data: '{}' } } )
         end
       end
 

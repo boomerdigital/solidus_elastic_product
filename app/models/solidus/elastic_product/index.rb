@@ -86,9 +86,7 @@ module Solidus::ElasticProduct
 
       def __transform
         lambda { |model|
-          # JSON.parse is required due to https://github.com/elastic/elasticsearch-rails/issues/606
-          # remove once issue is resolved, as it slows down the indexing
-          { index: { _id: model.id, data: JSON.parse(model.as_indexed_json) } }
+          { index: { _id: model.id, data: model.as_indexed_json } }
         }
       end
     end

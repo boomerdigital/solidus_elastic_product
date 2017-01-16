@@ -6,12 +6,16 @@ module SolidusElasticProduct
 
     # config.autoload_paths+= %W(#{config.root}/lib)
 
-    initializer "solidus.elastic.preferences", :before => :load_config_initializers do |app|
+    initializer "solidus.elastic_product.preferences", :before => :load_config_initializers do |app|
       Spree::BackendConfiguration::CONFIGURATION_TABS << :settings
 
       config.to_prepare do
         Solidus::ElasticProduct::Config = Solidus::ElasticProduct::Configuration.new
       end
+    end
+
+    initializer "solidus.elasticsearch.serializer", :before => :load_config_initializers do |app|
+      Elasticsearch::API.settings[:serializer] = Solidus::ElasticProduct::MultiJsonForHashOnly
     end
 
     # use rspec for tests

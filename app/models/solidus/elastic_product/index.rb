@@ -25,7 +25,7 @@ module Solidus::ElasticProduct
     index_name 'products_' + Rails.env
     document_type 'product'
 
-    settings File.open(SolidusElasticProduct::Engine.root + "config/elasticsearch/spree_products.yml")
+    settings File.open(SolidusElasticProduct::Engine.root + "config/analyzers.yml")
 
     options = {
       dynamic_templates: [

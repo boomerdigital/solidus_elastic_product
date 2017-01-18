@@ -3,7 +3,7 @@
 
 module Solidus::ElasticProduct
   class Schedule
-    BATCH_SIZE = 600
+    BATCH_SIZE = 500
     CHECK_EVERY = 1.minute
 
     class << self

@@ -20,7 +20,7 @@ module Solidus::ElasticProduct
       create_index!(index: new_index_name)
 
       # Put all data in the new index
-      import(index: new_index_name) do |response|
+      import(index: new_index_name, batch_size: 500) do |response|
         report_on(response)
 
         # Mark successfully indexed products as uploaded

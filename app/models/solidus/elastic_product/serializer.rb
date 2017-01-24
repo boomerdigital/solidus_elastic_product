@@ -49,7 +49,7 @@ module Solidus::ElasticProduct
           images = Spree::Image.
             select(distinct + 'spree_variants.product_id, spree_assets.*').
             joins("join spree_variants on viewable_id = spree_variants.id").
-            order("spree_variants.product_id", "spree_variants.position", "spree_variants.id", :position).
+            order("spree_variants.product_id", :position, "spree_variants.position", "spree_variants.id").
             where("spree_variants.product_id in (#{sub_query})").
             group_by &:product_id
 

@@ -190,6 +190,7 @@ module Solidus::ElasticProduct
         def as_indexed_hash
           {
             name: name,
+            lft: lft,
             permalink: permalink,
             description: description,
             permaname: [permalink, '||', name].join

@@ -111,16 +111,19 @@ module Solidus::ElasticProduct
   "taxons": [
     {
       "name": "Genre",
+      "lft": 1,
       "permalink": "genre",
       "description": null,
       "permaname": "genre||Genre",
       "child": {
         "name": "Rock",
+        "lft": 2,
         "permalink": "genre/rock",
         "description": "Main Taxon Descr",
         "permaname": "genre/rock||Rock",
         "child": {
           "name": "Roll",
+          "lft": 3,
           "permalink": "genre/rock/roll",
           "description": null,
           "permaname": "genre/rock/roll||Roll"

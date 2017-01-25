@@ -62,7 +62,7 @@ module Solidus::ElasticProduct
   "created_at": "2017-01-12T00:00:00Z",
   "popularity": 2,
   "image": {
-    "small_url": "#{image.attachment.url(:small)}"
+    "url": "#{image.attachment.url(:small)}"
   },
   "master": {
     "id": #{master.id},

@@ -199,7 +199,7 @@ module Solidus::ElasticProduct
 
       Spree::Image.class_eval do
         def as_indexed_hash
-          { small_url: attachment.url(:small) }
+          { url: attachment.url(:small) }
         end unless instance_methods(true).include?(:as_indexed_hash)
       end
 

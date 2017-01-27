@@ -66,6 +66,9 @@ module Solidus::ElasticProduct
       json
     end
 
+    def parsed_json
+      JSON.parse(json) if json
+    end
 
   private
 

@@ -46,11 +46,7 @@ module Solidus::ElasticProduct
         index_scope.find_each do |state|
           # Just in case the json has been cleared since it was queued
           @skipped << state.id and next unless state.json?
-
-          # JSON.parse is required when adding to an existing index
-          # due to https://github.com/elastic/elasticsearch-rails/issues/606
-          # remove once issue is resolved, as it slows down the indexing 10 fold!
-          body.push({ index: { _id: state.id, data: state.json } } )
+          body.push(Index.__transform.call(state))
         end
 
         delete_scope.find_each do |state|

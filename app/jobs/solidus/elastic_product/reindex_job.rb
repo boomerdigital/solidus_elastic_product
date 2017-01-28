@@ -26,13 +26,15 @@ module Solidus::ElasticProduct
         # Mark successfully indexed products as uploaded
         ids = response['items'].select { |p| p['index']['error'].nil? }
                                .map { |p| p['index']['_id'] }
+
         State.where(id: ids).mark_uploaded!
       end
 
       # Then assign the alias to the new index
       swap(new_index_name)
 
-      # TODO: Do some old indices cleanup
+      # And delete the old index
+      cleanup
     ensure
       # Restore to previous value (likely enabled)
       Config.incremental_update_enabled = old_state
@@ -43,7 +45,7 @@ module Solidus::ElasticProduct
     # Moves the alias to the new index, or
     # creates one if an alias doesn't exist yet
     #
-    # borrowed from searchkick/lib/searchkick/index.rb:36
+    # borrowed from searchkick/lib/searchkick/index.rb:190
     def swap(new_name)
       actions = []
 
@@ -60,13 +62,26 @@ module Solidus::ElasticProduct
 
     def report_on(response)
       if response["errors"]
-        Rails.logger.error "ElasticProduct: Failed to perform reindex"
-        response['items'].each do |p|
-          message = { id: p['index']['_id'] }.merge p['index']['error']
-          Rails.logger.error message
+        Rails.logger.error "ElasticProduct: Failed to perform reindex for some products"
+        response['items'].select { |item| item.key?('error') }.each do |item|
+          Rails.logger.error item.to_s
         end
       else
         Rails.logger.info "ElasticProduct: Reindexed successfully in #{response['took']} ms"
+      end
+    end
+
+    # Remove old indices that start with index_name
+    #
+    # borrowed from searchkick/lib/searchkick/index.rb:167
+    def cleanup
+      indices = client.indices.get_aliases.
+        select { |name, properties| properties.empty? || properties["aliases"].empty? }.
+        select { |name, properties| name =~ /\A#{Regexp.escape(index_name)}_\d{14,17}\z/ }.keys
+
+      indices.each do |index|
+        Index.delete_index!(index: index)
+        Rails.logger.info "ElasticProduct: Deleted index #{index}"
       end
     end
 

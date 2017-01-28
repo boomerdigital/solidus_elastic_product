@@ -8,6 +8,7 @@ module Solidus::ElasticProduct
     before do
       allow(Index).to receive(:client).and_return client
       allow(Index).to receive(:create_index!)
+      allow(indices).to receive(:get_aliases).and_return({})
     end
 
 

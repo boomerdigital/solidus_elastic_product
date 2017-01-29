@@ -10,28 +10,41 @@ module Solidus::ElasticProduct
     queue_as :elastic_uploader
 
     delegate  :client, :index_name, :document_type,
-              :import, :create_index!, to: Index
+              :create_index!, to: Index
 
     def perform
       old_state = Config.incremental_update_enabled
       Config.incremental_update_enabled = false
 
+      # Create a brand new index
       new_index_name = index_name + "_" + Time.now.strftime('%Y%m%d%H%M%S%L')
       create_index!(index: new_index_name)
 
-      # Put all data in the new index
-      import(index: new_index_name, batch_size: 500) do |response|
+      # And upload all to it
+      errored = []
+
+      Index.import(index: new_index_name, batch_size: 500) do |response|
         report_on(response)
 
-        # Mark successfully indexed products as uploaded
-        ids = response['items'].select { |p| p['index']['error'].nil? }
-                               .map { |p| p['index']['_id'] }
-
-        State.where(id: ids).mark_uploaded!
+        # Collect errored products
+        response['items'].select { |item| item['index'].key?('error') }.
+                          each   { |item| errored << item['index']['_id'] }
       end
 
-      # Then assign the alias to the new index
+      Rails.logger.info "elastic-product: Errors on reindex: " << errored.size.to_s
+
+      total = State.count
+      if total > 0 && errored.size.to_f / total > 0.05
+        Rails.logger.error "elastic-product: More than 5% errors. Aborting index swap."
+        return
+      end
+
+      # Switch to use the newly created index for search
       swap(new_index_name)
+
+      # If all good up till here, mark all those successfully
+      # indexed products as uploaded
+      State.where.not(id: errored).mark_uploaded!
 
       # And delete the old index
       cleanup
@@ -62,12 +75,11 @@ module Solidus::ElasticProduct
 
     def report_on(response)
       if response["errors"]
-        Rails.logger.error "ElasticProduct: Failed to perform reindex for some products"
         response['items'].select { |item| item.key?('error') }.each do |item|
-          Rails.logger.error item.to_s
+          Rails.logger.error "elastic-product: Failed to index: " << item.to_s
         end
       else
-        Rails.logger.info "ElasticProduct: Reindexed successfully in #{response['took']} ms"
+        Rails.logger.info "elastic-product: Reindexed batch successfully in #{response['took']} ms"
       end
     end
 
@@ -81,7 +93,7 @@ module Solidus::ElasticProduct
 
       indices.each do |index|
         Index.delete_index!(index: index)
-        Rails.logger.info "ElasticProduct: Deleted index #{index}"
+        Rails.logger.info "elastic-product: Deleted index #{index}"
       end
     end
 

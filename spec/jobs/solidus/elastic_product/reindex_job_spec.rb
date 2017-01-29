@@ -80,7 +80,7 @@ module Solidus::ElasticProduct
 
         it 'will upload all products using #import and mark them as uploaded' do
           allow(Index).to receive(:import).and_yield success_response
-          expect(State).to receive(:where).with(id: ["10", "20"]).and_return State
+          expect(State).to receive_message_chain(:where, :not).with(id: []).and_return State
           expect(State).to receive(:mark_uploaded!)
 
           expect(indices).to receive(:exists_alias).with({ name: 'products_test'}).and_return true
@@ -121,16 +121,44 @@ module Solidus::ElasticProduct
           }
         end
 
-        it 'not mark failed to upload products as uploaded, but will still swap the index (may change in the future)' do
-          allow(Index).to receive(:import).and_yield error_response
-          expect(State).to receive(:where).with(id: []).and_return State
-          expect(State).to receive(:mark_uploaded!)
+        describe 'swapping the index' do
+          before do
+            allow(Index).to receive(:import).and_yield error_response
+          end
 
-          expect(indices).to receive(:exists_alias)
-          expect(indices).to receive(:update_aliases)
+          context 'when less than 5% of the products have failed to index' do
+            before do
+              allow(State).to receive(:count).and_return(21)
+            end
 
-          subject.perform
+            it 'not mark failed to upload products as uploaded, but will still swap the index' do
+              expect(State).to receive_message_chain(:where, :not).with(id: ["1"]).and_return State
+              expect(State).to receive(:mark_uploaded!)
+
+              expect(indices).to receive(:exists_alias)
+              expect(indices).to receive(:update_aliases)
+
+              subject.perform
+            end
+          end
+
+          context 'when more than 5% of the products have failed to index' do
+            before do
+              allow(State).to receive(:count).and_return(2)
+            end
+
+            it 'not mark failed to upload products as uploaded, but will still swap the index' do
+              expect(State).not_to receive(:where)
+              expect(State).not_to receive(:mark_uploaded!)
+
+              expect(indices).not_to receive(:exists_alias)
+              expect(indices).not_to receive(:update_aliases)
+
+              subject.perform
+            end
+          end
         end
+
 
       end
     end

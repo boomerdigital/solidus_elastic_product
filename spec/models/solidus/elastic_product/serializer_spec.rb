@@ -16,7 +16,7 @@ module Solidus::ElasticProduct
       let(:option_type) { create :option_type, name: 'condition' }
       let(:image) { build :image }
       let(:variant_image) { build :image } # should pick the master image instead
-      let(:master) { build :master_variant, sku: '4949593040589', price: 2.99, images: [image] }
+      let(:master) { build :master_variant, sku: '4949593040589', price: 1.99, images: [image] }
       let(:variant_1) do
         build :variant, sku: 'U4949593040589', price: 1, images: [variant_image],
           option_values: [build(:option_value, name: 'used', option_type: option_type)]
@@ -64,11 +64,11 @@ module Solidus::ElasticProduct
   "image": {
     "url": "#{image.attachment.url(:small)}"
   },
+  "price": "1.00",
+  "display_price": "$1.00",
   "master": {
     "id": #{master.id},
     "sku": "4949593040589",
-    "price": "2.99",
-    "display_price": "$2.99",
     "total_on_hand": 0,
     "option_values": [
 
@@ -78,8 +78,6 @@ module Solidus::ElasticProduct
     {
       "id": #{variant_1.id},
       "sku": "U4949593040589",
-      "price": "1.00",
-      "display_price": "$1.00",
       "total_on_hand": 5,
       "option_values": [
         {
@@ -91,8 +89,6 @@ module Solidus::ElasticProduct
     {
       "id": #{variant_2.id},
       "sku": "V4949593040589",
-      "price": "2.99",
-      "display_price": "$2.99",
       "total_on_hand": 8,
       "option_values": [
         {

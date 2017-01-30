@@ -58,11 +58,19 @@ module Solidus::ElasticProduct
             where("product_id IN (#{sub_query})").
             group(:product_id).count
 
+          # single currency support only
+          prices = Spree::Price.
+            joins(:variant).
+            where(is_default: true).
+            where("spree_variants.product_id in (#{sub_query})").
+            group("spree_variants.product_id").
+            minimum(:amount)
+
           preload = -> (object, method, value) { object.singleton_class.send(:define_method, method) { value } }
 
-          scope = includes :elastic_state, :indexable_classifications, indexable_product_properties: :property,
-            variants: [{ option_values: :option_type }, :default_price],
-            master: [:default_price]
+          scope = includes :elastic_state, :indexable_classifications, :master,
+            indexable_product_properties: :property,
+            variants: [{ option_values: :option_type }]
 
           records = scope.to_a # Load outside of transaction to prevent excessive locking
           State.transaction do
@@ -77,6 +85,8 @@ module Solidus::ElasticProduct
               preload[product, :display_image, images.key?(product.id) && images[product.id][0] || Spree::Image.new]
 
               preload[product, :indexed_popularity, popularity[product.id] || 0]
+
+              preload[product, :indexed_price, prices[product.id] || 0]
 
               for classification in product.indexable_classifications
                 taxon = Spree::Taxon.by_id[classification.taxon_id]
@@ -135,11 +145,14 @@ module Solidus::ElasticProduct
     module ElasticRepresentation
       Spree::Product.class_eval do
         def as_indexed_hash
+          displayed_price = Spree::Money.new(indexed_price) # single currency support only
           {
             id: id, name: name, description: description, slug: slug,
             created_at: created_at.to_formatted_s(:iso8601),
             popularity: indexed_popularity,
             image: display_image.as_indexed_hash,
+            price: displayed_price.money.format(symbol: false),
+            display_price: displayed_price.to_s,
             master: master.as_indexed_hash,
             variants: variants.collect {|v| v.as_indexed_hash}.compact,
             properties: indexable_product_properties.collect {|p| p.as_indexed_hash},
@@ -150,11 +163,8 @@ module Solidus::ElasticProduct
 
       Spree::Variant.class_eval do
         def as_indexed_hash
-          money = default_price.display_price
           {
             id: id, sku: sku,
-            price: money.money.format(symbol: false),
-            display_price: money.to_s,
             total_on_hand: total_on_hand
           }.tap do |ret|
             if is_master?

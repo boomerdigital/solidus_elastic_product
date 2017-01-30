@@ -23,6 +23,14 @@ Spree::Product.class_eval do
     line_items.count
   end
 
+  def indexed_price
+    Spree::Price.
+      joins(:variant).
+      where(is_default: true).
+      where(spree_variants: { product_id: id } ).
+      minimum(:amount)
+  end
+
   private
 
   # Trigger the state reset so that the manager can notice

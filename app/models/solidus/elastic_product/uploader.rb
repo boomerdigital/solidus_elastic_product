@@ -50,7 +50,7 @@ module Solidus::ElasticProduct
         end
 
         delete_scope.find_each do |state|
-          body.push({ delete: { _id: state.id } })
+          body.push(Index.transform_delete.call(state))
         end
 
         body

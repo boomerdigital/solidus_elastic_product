@@ -93,6 +93,14 @@ module Solidus::ElasticProduct
 
     extend Importing
 
+    class << self
+      def transform_delete
+        lambda { |model|
+          { delete: { _id: model.id } }
+        }
+      end
+    end
+
 
   end
 end

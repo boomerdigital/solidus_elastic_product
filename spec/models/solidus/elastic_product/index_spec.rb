@@ -78,6 +78,15 @@ module Solidus::ElasticProduct
         end
       end
 
+      describe "#transform_delete" do
+        subject { described_class.transform_delete }
+
+        it "provides a delete transformation" do
+          model = instance_double State, id: 1
+          expect(subject.call(model)).to eq( { delete: { _id: 1 } } )
+        end
+      end
+
     end
   end
 end

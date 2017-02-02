@@ -30,5 +30,10 @@ describe Spree::Product do
       expect(subject.elastic_state).to receive(:reset!)
       subject.touch
     end
+
+    it "resets the state on destroy" do
+      expect(subject.elastic_state).to receive(:reset!)
+      subject.destroy!
+    end
   end
 end

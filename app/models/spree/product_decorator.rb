@@ -39,6 +39,7 @@ Spree::Product.class_eval do
     elastic_state.reset! if elastic_state
   end
   after_touch :reset_index_state
+  after_destroy :reset_index_state
 
   # Every product should have a state record. This ensures this happens at
   # record creation time. The migration ensures it happens to all existing

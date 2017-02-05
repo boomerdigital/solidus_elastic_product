@@ -17,7 +17,10 @@ module Solidus::ElasticProduct
         Timeout::timeout 5.minutes do
           Spree::Product.where(id: product_ids).each_for_serialization do |product|
             product.elastic_state.generate_json!
+            product = nil
           end
+
+          GC.start
         end
       end
     end

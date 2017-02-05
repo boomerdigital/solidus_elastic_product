@@ -65,7 +65,7 @@ module Solidus::ElasticProduct
     class Error < StandardError
       # Automatically extract the relevant info and puts it into the error message.
       def initialize response
-        super "Elastic failed for items: #{response['items']}}"
+        super "Elastic failed for items: #{response['items'].select { |item| item.key?('error') }}}"
       end
     end
 

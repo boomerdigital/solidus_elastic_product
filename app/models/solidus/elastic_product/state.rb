@@ -28,8 +28,8 @@ module Solidus::ElasticProduct
 
     # Customization points for excluding products from the search index
     #
-    scope :indexable,     -> { not_deleted }
-    scope :not_indexable, -> { only_deleted }
+    scope :indexable,     -> { not_deleted.available }
+    scope :not_indexable, -> { deleted_or_not_available }
 
     # Will mark all the states in the given scope as uploaded. This is done
     # in batch unlike reset! and generate_json! because until the entire batch
@@ -77,6 +77,14 @@ module Solidus::ElasticProduct
     scope :not_deleted,  -> { with_product.where Spree::Product.table_name => {deleted_at: nil} }
 
     scope :serialized, -> { where.not json: nil }
+
+    scope :available, -> { with_product.where(Spree::Product.arel_table[:available_on].lteq(Time.current)) }
+    scope :deleted_or_not_available, -> {
+      with_product.where \
+        Spree::Product.arel_table[:available_on].gt(Time.current).
+        or(Spree::Product.arel_table[:available_on].eq(nil)).
+        or(Spree::Product.arel_table[:deleted_at].not_eq(nil))
+    }
 
     scope :serialized_or_excluded, -> {
       serialized = unscoped.serialized.where_values.reduce(:and)

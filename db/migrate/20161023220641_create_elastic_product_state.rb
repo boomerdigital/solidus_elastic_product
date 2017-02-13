@@ -11,8 +11,10 @@ class CreateElasticProductState < ActiveRecord::Migration
       t.index :json, where: 'json is null'
     end
 
-    # to get out of a transaction
-    execute("commit;")
+    # Run Insert outside of a transaction for Postgres
+    if connection.adapter_name =~ /postgres/i
+      execute("commit;")
+    end
 
     execute "INSERT INTO #{Solidus::ElasticProduct::State.table_name} (product_id) SELECT id FROM #{Spree::Product.table_name}"
   end

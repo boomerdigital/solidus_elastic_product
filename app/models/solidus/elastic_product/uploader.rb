@@ -5,8 +5,9 @@ module Solidus::ElasticProduct
     attr_reader :response, :scope, :skipped
 
     def initialize product_ids
-      @scope = State.where product_id: product_ids
+      @scope = State.where uploaded: false, product_id: product_ids
       @skipped = []
+      @failures = []
       @response = nil
     end
 
@@ -18,17 +19,20 @@ module Solidus::ElasticProduct
 
       process_results
 
-      if succeeded?
-        # Elastic says everything good. Mark it as uploaded so it won't be retried.
-        @scope = @scope.where.not id: skipped unless skipped.empty?
-        @scope.mark_uploaded!
-      else
+      @skipped += @failures.select { |item| item['index'] }.map { |item| item['index']['_id'] }
+      @skipped += @failures.select { |item| item['delete'] }.map { |item| item['delete']['_id'] }
+
+      # Mark successes as uploaded
+      @scope = @scope.where.not id: @skipped unless @skipped.empty?
+      @scope.mark_uploaded!
+
+      if @failures.any?
         # NOTE: We do not clear the lock on failure. This allows some time to
         # pass before we try again so hopefully the issue is cleared out.
         #
         # But we do still raise an error so the issue can be noticed (i.e. it
         # doesn't just silently keep retrying).
-        raise Error, @response
+        raise Error, @failures
       end
 
       @response
@@ -46,6 +50,7 @@ module Solidus::ElasticProduct
         index_scope.find_each do |state|
           # Just in case the json has been cleared since it was queued
           @skipped << state.id and next unless state.json?
+
           body.push(Index.__transform.call(state))
         end
 
@@ -57,22 +62,21 @@ module Solidus::ElasticProduct
       end
     end
 
-    def succeeded?
-      !response["errors"]
-    end
-
     # An exception that can be used to communicate the problem
     class Error < StandardError
       # Automatically extract the relevant info and puts it into the error message.
-      def initialize response
-        super "Elastic failed for items: #{response['items'].select { |item| item.key?('error') }}}"
+      def initialize failed
+        super "failed items: " << failed.to_s
       end
     end
 
     def process_results
-      if succeeded?
-        Rails.logger.info "Elastic updated successfully in #{response['took']} ms"
+      @failures = @response['items'].select do |item|
+        (item['index'] && item['index'].key?('error')) || (item['delete'] && item['delete'].key?('error'))
       end
+
+      total = @scope.count
+      Rails.logger.info "elastic-product: updated #{total - @failures.size} out of #{total} in #{@response['took']} ms"
     end
 
   end

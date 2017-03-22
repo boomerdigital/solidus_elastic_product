@@ -5,8 +5,8 @@ require 'solidus_elastic_product/version'
 Gem::Specification.new do |s|
   s.name        = 'solidus_elastic_product'
   s.version     = SolidusElasticProduct::VERSION
-  s.summary     = 'Elastic Search integration for Solidus'
-  s.description = 'Uses a product state table to sync changes with Elastic Search in background.'
+  s.summary     = 'High performance Elastic Search data syncronization extension for Solidus'
+  s.description = 'Uses a product state table to sync changes with Elastic Search in background through workers.'
   s.license     = 'BSD-3-Clause'
 
   s.author      = 'Eric Anderson; Martin Tomov'
@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir['test/**/*']
 
   s.add_dependency 'elasticsearch-model'
-  s.add_dependency 'solidus_core', '~> 1.0'
+  s.add_dependency 'solidus_core'
 
   s.add_development_dependency 'capybara'
   s.add_development_dependency 'poltergeist'

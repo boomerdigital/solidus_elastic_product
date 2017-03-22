@@ -7,14 +7,15 @@ module Solidus::ElasticProduct
       let(:success_response) { {"errors" => false, "items" => []} }
 
       it 'will upload products with pre-generated JSON' do
+        product = create :product_with_elastic_state, json: '{"foo": "bar"}'
+
         expected_args = {
           index: "products_test",
           type:  "product",
-          body:  [{:index=>{:_id=>1, :data => '{"foo": "bar"}'}}]
+          body:  [{:index=>{:_id=> product.elastic_state.id, :data => '{"foo": "bar"}'}}]
         }
         expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
 
-        product = create :product_with_elastic_state, json: '{"foo": "bar"}'
         subject = described_class.new([product.id])
         subject.execute
 
@@ -53,14 +54,15 @@ module Solidus::ElasticProduct
       end
 
       it 'will indicate what products should be removed' do
+        product = create :product
+
         expected_args = {
           index: "products_test",
           type:  "product",
-          body:  [{delete: {_id: 1}}]
+          body:  [{delete: {_id: product.elastic_state.id}}]
         }
         expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
 
-        product = create :product
         product.destroy
 
         subject = described_class.new([product.id])

@@ -23,7 +23,7 @@ describe Spree::Product do
     specify { expect(subject.indexable_classifications).to eq([]) }
   end
 
-  describe '#reset_index_state' do
+  describe '#reset_index_state', no_transaction: true do
     let(:product) { create(:product) }
 
     it "resets the state on record change/touch" do

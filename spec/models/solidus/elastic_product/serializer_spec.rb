@@ -156,6 +156,9 @@ JSON
       end
 
       it 'is uses fresh taxons (not stale cached versions)' do
+        # for MySQL updated_at second precision
+        Spree::Taxon.update_all(updated_at: 3.days.ago)
+
         Spree::Product.where(id: product.id).each_for_serialization do |product|
           json = described_class.new(product).generate_indexed_json
         end

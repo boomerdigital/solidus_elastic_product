@@ -87,10 +87,14 @@ module Solidus::ElasticProduct
     }
 
     scope :serialized_or_excluded, -> {
-      serialized = unscoped.serialized.where_values.reduce(:and)
-      excluded_from_index = unscoped.not_indexable.where_values.reduce(:and)
+      if unscoped.respond_to?(:or) # It's easier with Rails 5
+        with_product.serialized.or(not_indexable)
+      else
+        serialized = unscoped.serialized.where_values.reduce(:and)
+        excluded_from_index = unscoped.not_indexable.where_values.reduce(:and)
 
-      with_product.where serialized.or(excluded_from_index)
+        with_product.where serialized.or(excluded_from_index)
+      end
     }
 
     scope :not_locked, ->(field, expiration) {
@@ -105,6 +109,5 @@ module Solidus::ElasticProduct
       # above. Reason #395493494 why the paranoia gem is dumb.
       joins "INNER JOIN #{Spree::Product.table_name} ON #{Spree::Product.table_name}.id = #{table_name}.product_id"
     }
-
   end
 end

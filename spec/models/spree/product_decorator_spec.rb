@@ -15,6 +15,11 @@ describe Spree::Product do
     specify { expect(subject.indexed_popularity).to eq(2) }
   end
 
+  describe '#indexed_price' do
+    let(:product) { create(:product) }
+    specify { expect(subject.indexed_price).to eq(19.99) }
+  end
+
   describe '#indexable_product_properties' do
     specify { expect(subject.indexable_product_properties).to eq([]) }
   end

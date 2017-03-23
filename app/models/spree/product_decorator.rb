@@ -23,15 +23,14 @@ Spree::Product.class_eval do
     line_items.count
   end
 
+  # Very rought implementation. Re-implement in your own code
+  # if a more granular approach is required.
   def indexed_price
     Spree::Price.
       joins(:variant).
-      where(is_default: true).
       where(spree_variants: { product_id: id } ).
       minimum(:amount)
   end
-
-  private
 
   # Trigger the state reset so that the manager can notice
   # work needs to be done to resync the product's index document

@@ -58,10 +58,9 @@ module Solidus::ElasticProduct
             where("product_id IN (#{sub_query})").
             group(:product_id).count
 
-          # single currency support only
+          # Very rought implementation
           prices = Spree::Price.
             joins(:variant).
-            where(is_default: true).
             where("spree_variants.product_id in (#{sub_query})").
             group("spree_variants.product_id").
             minimum(:amount)

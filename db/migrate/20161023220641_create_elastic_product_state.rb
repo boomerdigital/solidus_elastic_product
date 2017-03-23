@@ -8,7 +8,11 @@ class CreateElasticProductState < ActiveRecord::Migration
       t.datetime :locked_for_upload_at, index: true
 
       t.index :locked_for_serialization_at, name: 'index_states_on_locked_for_serialization_at'
-      t.index :json, where: 'json is null'
+
+      # Partial index for Postgres only
+      if connection.adapter_name =~ /postgres/i
+        t.index :json, where: 'json is null'
+      end
     end
 
     # Run Insert outside of a transaction for Postgres

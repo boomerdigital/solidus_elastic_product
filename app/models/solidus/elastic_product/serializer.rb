@@ -153,7 +153,7 @@ module Solidus::ElasticProduct
             price: displayed_price.money.format(symbol: false),
             display_price: displayed_price.to_s,
             master: master.as_indexed_hash,
-            variants: variants.collect {|v| v.as_indexed_hash}.compact,
+            variants: variants.sort_by { |v| v.id }.collect {|v| v.as_indexed_hash}.compact,
             properties: indexable_product_properties.collect {|p| p.as_indexed_hash},
             taxons: indexable_classifications.collect {|c| c.as_indexed_hash}
           }

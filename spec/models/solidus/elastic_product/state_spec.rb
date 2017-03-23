@@ -18,7 +18,7 @@ module Solidus::ElasticProduct
         locked = create :product_with_elastic_state, locked_for_serialization_at: Time.current
         expired_lock = create :product_with_elastic_state, locked_for_serialization_at: 1.month.ago
 
-        expect( described_class.needing_serialization ).to eq \
+        expect( described_class.needing_serialization ).to match_array \
           [without_json.elastic_state, expired_lock.elastic_state]
       end
     end
@@ -32,7 +32,7 @@ module Solidus::ElasticProduct
         locked = create :product_with_elastic_state, json: '{}', locked_for_upload_at: Time.current
         expired_lock = create :product_with_elastic_state, json: '{}', locked_for_upload_at: 1.month.ago
 
-        expect( described_class.needing_upload ).to eq \
+        expect( described_class.needing_upload ).to match_array \
           [not_serialized_but_deleted.elastic_state, not_uploaded.elastic_state,
             expired_lock.elastic_state]
       end

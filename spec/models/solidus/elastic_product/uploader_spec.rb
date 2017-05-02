@@ -23,12 +23,7 @@ module Solidus::ElasticProduct
       end
 
       it 'will skip products without JSON' do
-        expected_args = {
-          index: "products_test",
-          type:  "product",
-          body:  []
-        }
-        expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
+        expect(Index.client).not_to receive(:bulk)
 
         product = create :product
         subject = described_class.new([product.id])
@@ -38,12 +33,7 @@ module Solidus::ElasticProduct
       end
 
       it 'will skip already uploaded products' do
-        expected_args = {
-          index: "products_test",
-          type:  "product",
-          body:  []
-        }
-        expect(Index.client).to receive(:bulk).with(expected_args).and_return(success_response)
+        expect(Index.client).not_to receive(:bulk)
 
         product = create :product
         product = create :product_with_elastic_state, json: '{"foo": "bar"}', uploaded: true

@@ -12,10 +12,13 @@ module Solidus::ElasticProduct
     end
 
     def execute
+      body = generate_body
+      return if body.empty?
+
       @response = Index.client.bulk \
                    index:   Index.index_name,
                    type:    Index.document_type,
-                   body:    generate_body
+                   body:    body
 
       process_results
 
